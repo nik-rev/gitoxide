@@ -100,12 +100,13 @@ mod blocking_and_async_io {
             )?;
             Ok(())
         }
-        let remote_dir = tempfile::tempdir()?;
-        let remote_repo = gix::init_bare(remote_dir.path())?;
-        create_empty_commit(&remote_repo)?;
-
         for max_packs in 1..=2 {
+            let remote_dir = tempfile::tempdir()?;
+            let remote_repo = gix::init_bare(remote_dir.path())?;
+            create_empty_commit(&remote_repo)?;
+
             let local_dir = tempfile::tempdir()?;
+            dbg!(max_packs);
             let (local_repo, _) = gix::clone::PrepareFetch::new(
                 remote_repo.path(),
                 local_dir.path(),
@@ -122,7 +123,7 @@ mod blocking_and_async_io {
                 )
                 .expect("remote is configured after clone")?;
             for round in 1.. {
-                eprintln!("Fetch number {round}…");
+                dbg!(round);
                 create_empty_commit(&remote_repo)?;
                 match remote
                     .connect(Fetch)?

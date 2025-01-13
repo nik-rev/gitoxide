@@ -266,7 +266,7 @@ impl super::Store {
                         Option::as_ref(&files_guard).expect("slot is set or we wouldn't know it points to this file");
                     if index_info.is_multi_index() && files.mtime() != mtime {
                         // we have a changed multi-pack index. We can't just change the existing slot as it may alter slot indices
-                        // that are currently available. Instead we have to move what's there into a new slot, along with the changes,
+                        // that are currently available. Instead, we have to move what's there into a new slot, along with the changes,
                         // and later free the slot or dispose of the index in the slot (like we do for removed/missing files).
                         index_paths_to_add.push_back((index_info, mtime, Some(slot_idx)));
                         // If the current slot is loaded, the soon-to-be copied multi-index path will be loaded as well.
@@ -295,10 +295,11 @@ impl super::Store {
             .map_or(0, |idx| (idx + 1) % self.files.len());
         let mut num_indices_checked = 0;
         let mut needs_generation_change = false;
+        dbg!(idx_by_index_path.len());
         let mut slot_indices_to_remove: Vec<_> = idx_by_index_path.into_values().collect();
         while let Some((mut index_info, mtime, move_from_slot_idx)) = index_paths_to_add.pop_front() {
             'increment_slot_index: loop {
-                if num_indices_checked == self.files.len() {
+                if dbg!(num_indices_checked) == dbg!(self.files.len()) {
                     return Err(Error::InsufficientSlots {
                         current: self.files.len(),
                         needed: index_paths_to_add.len() + 1, /*the one currently popped off*/
@@ -502,7 +503,7 @@ impl super::Store {
         }
         // Unlike libgit2, do not sort by modification date, but by size and put the biggest indices first. That way
         // the chance to hit an object should be higher. We leave it to the handle to sort by LRU.
-        // Git itself doesn't change the order which may safe time, but we want it to be stable which also helps some tests.
+        // Git itself doesn't change the order which may save time, but we want it to be stable which also helps some tests.
         // NOTE: this will work well for well-packed repos or those using geometric repacking, but force us to open a lot
         //       of files when dealing with new objects, as there is no notion of recency here as would be with unmaintained
         //       repositories. Different algorithms should be provided, like newest packs first, and possibly a mix of both
