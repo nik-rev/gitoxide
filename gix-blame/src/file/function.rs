@@ -661,7 +661,16 @@ fn find_path_entry_in_commit(
     let res = tree_iter.lookup_entry(
         odb,
         buf2,
-        file_path.split(|b| *b == b'/').inspect(|_| stats.trees_decoded += 1),
+        file_path
+            .split(|b| {
+                b == const {
+                    std::path::MAIN_SEPARATOR_STR
+                        .as_bytes()
+                        .first()
+                        .expect("platform path separator not to be empty")
+                }
+            })
+            .inspect(|_| stats.trees_decoded += 1),
     )?;
     stats.trees_decoded -= 1;
     Ok(res.map(|e| e.oid))
